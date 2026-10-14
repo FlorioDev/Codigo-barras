@@ -1,702 +1,749 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Gerador de Código de Barras EAN-13</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador EAN-13</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.42.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg-page: #eef1f5;
+    --bg-card: #ffffff;
+    --bg-soft: #f6f8fb;
+    --bg-softer: #fafbfd;
+    --border: #e3e7ee;
+    --border-strong: #d3d9e3;
+    --text: #1a2233;
+    --text-2: #566079;
+    --text-3: #8891a4;
+    --accent: #2b5fd9;
+    --accent-hover: #1f4bb8;
+    --accent-soft: #eaf0fd;
+    --success: #1f8a3f;
+    --danger: #d13a3a;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 2px rgba(20,30,60,0.05);
+    --shadow: 0 2px 8px rgba(20,30,60,0.06), 0 1px 2px rgba(20,30,60,0.04);
+    --shadow-lg: 0 12px 32px -10px rgba(20,30,60,0.14), 0 4px 12px -4px rgba(20,30,60,0.08);
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, "Courier New", monospace;
+  }
 
-        body {
-            background: linear-gradient(145deg, #e9f0f5 0%, #d9e2ec 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', 'Arial', 'Calibri', 'Roboto', sans-serif;
-            padding: 20px;
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .glass-card {
-            max-width: 1000px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(2px);
-            border-radius: 48px;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.05);
-            padding: 28px 32px 40px;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(255,255,240,0.6);
-        }
+  html, body {
+    background: var(--bg-page);
+    font-family: var(--font-sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 28px 16px 48px;
+  }
 
-        h1 {
-            font-size: 1.9rem;
-            font-weight: 600;
-            color: #1e2f3e;
-            letter-spacing: -0.3px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+  .app {
+    max-width: 620px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
 
-        h1 small {
-            font-size: 0.8rem;
-            font-weight: 400;
-            background: #d0dfe9;
-            padding: 4px 12px;
-            border-radius: 100px;
-            color: #1f3b4a;
-        }
+  /* ======== HEADER ======== */
+  .app-header {
+    padding: 26px 28px 22px;
+    background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .app-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2b5fd9 0%, #4a7ff0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    box-shadow: 0 6px 14px -4px rgba(43,95,217,0.45);
+    flex-shrink: 0;
+  }
+  .app-header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .app-header p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 3px;
+  }
 
-        .sub {
-            color: #4a6272;
-            border-left: 3px solid #3c8dbc;
-            padding-left: 14px;
-            margin: 12px 0 28px 0;
-            font-size: 0.9rem;
-            font-weight: 450;
-        }
+  /* ======== BODY ======== */
+  .app-body {
+    padding: 24px 28px 28px;
+  }
 
-        .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-        }
+  /* ======== INPUT ======== */
+  .field { margin-bottom: 20px; }
+  .field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 8px;
+  }
+  .field-label span.counter {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-3);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    text-transform: none;
+  }
+  .code-input {
+    width: 100%;
+    padding: 14px 18px;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    letter-spacing: 6px;
+    text-align: center;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-softer);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  }
+  .code-input::placeholder {
+    color: #c8cdd8;
+    letter-spacing: 6px;
+  }
+  .code-input:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(43,95,217,0.12);
+  }
+  .code-input.ok  { border-color: #4ba764; background: #f4fbf6; }
+  .code-input.err { border-color: #e07a7a; background: #fdf6f6; }
 
-        .field {
-            flex: 2;
-            min-width: 220px;
-        }
+  .hint {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+  .hint.visible { display: flex; }
+  .hint.error   { color: #a32323; background: #fcecec; }
+  .hint.success { color: #17632b; background: #eaf7ee; }
+  .hint.info    { color: var(--text-2); background: var(--bg-soft); }
+  .hint i { font-size: 15px; }
 
-        .field label {
-            display: block;
-            font-weight: 600;
-            color: #1f4e6e;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            letter-spacing: 0.3px;
-        }
+  /* ======== AJUSTES ======== */
+  .adj-panel {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px 16px;
+    margin-bottom: 20px;
+  }
+  .adj-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 16px;
+  }
+  .adj-title i {
+    font-size: 15px;
+    color: var(--accent);
+  }
+  .adj-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 560px) {
+    .adj-grid { grid-template-columns: 1fr; gap: 14px; }
+  }
+  .adj-item label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    letter-spacing: 0.1px;
+  }
+  .adj-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .adj-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: #dbe1eb;
+    outline: none;
+  }
+  .adj-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .adj-row input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .adj-row input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+  }
+  .val-box {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 34px;
+    text-align: right;
+  }
 
-        .field input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
-            font-family: 'Courier New', 'SF Mono', monospace;
-            border: 2px solid #cbdbe2;
-            border-radius: 28px;
-            background: white;
-            transition: 0.2s;
-            outline: none;
-            font-weight: 500;
-            color: #0a2b38;
-        }
+  .adj-btns {
+    display: flex;
+    gap: 5px;
+    margin-top: 9px;
+  }
+  .adj-btn {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: #fff;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: inherit;
+  }
+  .adj-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .adj-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 4px -1px rgba(43,95,217,0.35);
+  }
 
-        .field input:focus {
-            border-color: #2c7da0;
-            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
-        }
+  /* ======== PREVIEW ======== */
+  .preview-section {
+    margin-bottom: 20px;
+  }
+  .preview-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 8px;
+  }
+  .preview-label .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ba764;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .preview-label .dot.off { background: #c8cdd8; }
 
-        .hint {
-            font-size: 0.7rem;
-            margin-top: 6px;
-            color: #6f8ea0;
-            margin-left: 12px;
-        }
+  .preview {
+    background:
+      linear-gradient(45deg, #f6f8fb 25%, transparent 25%),
+      linear-gradient(-45deg, #f6f8fb 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #f6f8fb 75%),
+      linear-gradient(-45deg, transparent 75%, #f6f8fb 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    background-color: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: min-height 0.2s;
+  }
+  .preview.empty {
+    background: var(--bg-softer);
+    color: var(--text-3);
+    font-size: 13px;
+    border-style: dashed;
+  }
+  .preview svg {
+    max-width: 100%;
+    height: auto;
+    background: #fff;
+    border-radius: 4px;
+    padding: 6px 8px;
+    box-shadow: 0 1px 3px rgba(20,30,60,0.06);
+  }
 
-        button {
-            background: #2c7da0;
-            border: none;
-            padding: 14px 24px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: white;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+  /* ======== BOTÕES ======== */
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .btn {
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .btn i { font-size: 17px; }
+  .btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-soft);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 10px -3px rgba(43,95,217,0.4);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    color: #fff;
+    border-color: var(--accent-hover);
+    box-shadow: 0 6px 14px -3px rgba(43,95,217,0.5);
+  }
 
-        button:hover {
-            background: #1f5e7e;
-            transform: scale(0.97);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-        }
+  /* ======== BADGES ======== */
+  .info-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 20px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .badge strong { color: var(--text); font-weight: 600; }
+  .badge.ok {
+    background: #eaf7ee;
+    border-color: #c5e6cf;
+    color: #17632b;
+  }
+  .badge.err {
+    background: #fcecec;
+    border-color: #f2c9c9;
+    color: #a32323;
+  }
+  .badge .b-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+  }
 
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0 20px;
-            gap: 12px;
-        }
-
-        .btn-outline {
-            background: #eef3f7;
-            color: #1f5e7e;
-            border: 1px solid #bfd8e5;
-            box-shadow: none;
-        }
-
-        .btn-outline:hover {
-            background: #e2edf4;
-            transform: none;
-            border-color: #2c7da0;
-        }
-
-        /* Painel de controles */
-        .controls-panel {
-            background: #f0f5f9;
-            border-radius: 32px;
-            padding: 18px 24px;
-            margin-bottom: 24px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: space-between;
-            border: 1px solid #e0ecf3;
-        }
-
-        .control-group {
-            flex: 1;
-            min-width: 160px;
-        }
-
-        .control-group label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #1f4e6e;
-            font-size: 0.8rem;
-            margin-bottom: 10px;
-        }
-
-        .control-group input {
-            width: 100%;
-            accent-color: #2c7da0;
-        }
-
-        .control-value {
-            background: white;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-family: monospace;
-            font-weight: bold;
-            color: #1f5e7e;
-            font-size: 0.8rem;
-            border: 1px solid #cbdbe2;
-            display: inline-block;
-            margin-top: 6px;
-            text-align: center;
-        }
-
-        .range-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .range-wrapper input {
-            flex: 1;
-        }
-
-        .barcode-preview {
-            background: #ffffff;
-            border-radius: 32px;
-            padding: 32px 24px 24px 24px;
-            margin-top: 10px;
-            box-shadow: inset 0 1px 3px #0001, 0 10px 20px -8px rgba(0,0,0,0.15);
-            border: 1px solid #f0f4f8;
-        }
-
-        .barcode-wrapper {
-            display: flex;
-            justify-content: center;
-            overflow-x: auto;
-            padding: 12px 0 4px;
-            background: #fff;
-            border-radius: 24px;
-            min-height: 200px;
-        }
-
-        svg {
-            display: block;
-            margin: 0 auto;
-            max-width: 100%;
-            height: auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-
-        .info-message {
-            text-align: center;
-            font-size: 0.8rem;
-            margin-top: 20px;
-            color: #3a6b85;
-            background: #ecf5f9;
-            padding: 8px 12px;
-            border-radius: 60px;
-            display: inline-block;
-            width: auto;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.7rem;
-            color: #6c8b9c;
-        }
-
-        @media (max-width: 650px) {
-            .glass-card {
-                padding: 20px;
-            }
-            .controls-panel {
-                flex-direction: column;
-                gap: 16px;
-            }
-            button {
-                padding: 12px 18px;
-            }
-            .barcode-preview {
-                padding: 20px 12px;
-            }
-        }
-    </style>
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+  }
+</style>
 </head>
 <body>
 
-<div class="glass-card">
-    <h1>
-        📊 Gerador EAN-13
-        <small>padrão GTIN-13</small>
-    </h1>
-    <div class="sub">Código de barras numérico · 13 dígitos (inclui dígito verificador automático)</div>
+<div class="app">
+  <header class="app-header">
+    <div class="app-logo" aria-hidden="true">
+      <i class="ti ti-barcode"></i>
+    </div>
+    <div>
+      <h1>Gerador EAN-13</h1>
+      <p>Código de barras vetorial · exportação em SVG</p>
+    </div>
+  </header>
 
-    <div class="input-group">
-        <div class="field">
-            <label>🔢 Código EAN-13 (12 ou 13 dígitos)</label>
-            <input type="text" id="eanInput" placeholder="ex: 789123456789 ou 7891234567890" maxlength="13" inputmode="numeric">
-            <div class="hint">✔️ Aceita 12 dígitos (geramos o verificador) ou 13 dígitos completo.</div>
-        </div>
-        <div>
-            <button id="generateBtn">✨ Gerar código de barras</button>
-        </div>
+  <div class="app-body">
+
+    <div class="field">
+      <div class="field-label">
+        <span>Código EAN-13</span>
+        <span class="counter" id="counter">13 dígitos</span>
+      </div>
+      <input class="code-input" id="inp" type="text" maxlength="13"
+             placeholder="0000000000000" value="9780201379624" oninput="update()">
+      <div class="hint" id="hint"></div>
     </div>
 
-    <!-- Painel de controles unificado -->
-    <div class="controls-panel">
-        <div class="control-group">
-            <label>📏 Altura das barras (px):</label>
-            <div class="range-wrapper">
-                <input type="range" id="heightSlider" min="70" max="250" value="110" step="2">
-                <span class="control-value" id="heightValue">110px</span>
-            </div>
-            <div style="font-size: 0.7rem; color:#6f8ea0; margin-top: 4px;">↑ expande para baixo</div>
+    <div class="adj-panel">
+      <div class="adj-title">
+        <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+        Ajustes de aparência
+      </div>
+      <div class="adj-grid">
+
+        <div class="adj-item">
+          <label>Altura das barras</label>
+          <div class="adj-row">
+            <input type="range" id="sBarH" min="30" max="120" step="1" value="60"
+                   oninput="syncVal('sBarH','vBarH');update()">
+            <span class="val-box" id="vBarH">60</span>
+          </div>
+          <div class="adj-btns">
+            <button type="button" class="adj-btn" onclick="setVal('sBarH','vBarH',40)">P</button>
+            <button type="button" class="adj-btn active" onclick="setVal('sBarH','vBarH',60)">M</button>
+            <button type="button" class="adj-btn" onclick="setVal('sBarH','vBarH',90)">G</button>
+          </div>
         </div>
-        
-        <div class="control-group">
-            <label>🔤 Tamanho dos números (px):</label>
-            <div class="range-wrapper">
-                <input type="range" id="fontSizeSlider" min="10" max="28" value="15" step="1">
-                <span class="control-value" id="fontSizeValue">15px</span>
-            </div>
-            <div style="font-size: 0.7rem; color:#6f8ea0; margin-top: 4px;">fonte Arial</div>
+
+        <div class="adj-item">
+          <label>Tamanho dos números</label>
+          <div class="adj-row">
+            <input type="range" id="sFontSz" min="7" max="22" step="0.5" value="11.5"
+                   oninput="syncVal('sFontSz','vFontSz');update()">
+            <span class="val-box" id="vFontSz">11.5</span>
+          </div>
+          <div class="adj-btns">
+            <button type="button" class="adj-btn" onclick="setVal('sFontSz','vFontSz',9)">P</button>
+            <button type="button" class="adj-btn active" onclick="setVal('sFontSz','vFontSz',11.5)">M</button>
+            <button type="button" class="adj-btn" onclick="setVal('sFontSz','vFontSz',16)">G</button>
+          </div>
         </div>
-        
-        <div class="control-group">
-            <label>⬅️ Proximidade 1º dígito (px):</label>
-            <div class="range-wrapper">
-                <input type="range" id="firstDigitOffset" min="2" max="30" value="14" step="1">
-                <span class="control-value" id="offsetValue">14px</span>
-            </div>
-            <div style="font-size: 0.7rem; color:#6f8ea0; margin-top: 4px;">menor = mais próximo da primeira barra</div>
+
+        <div class="adj-item">
+          <label>1º dígito — distância</label>
+          <div class="adj-row">
+            <input type="range" id="sD0Off" min="2" max="30" step="1" value="14"
+                   oninput="syncVal('sD0Off','vD0Off');update()">
+            <span class="val-box" id="vD0Off">14</span>
+          </div>
+          <div class="adj-btns">
+            <button type="button" class="adj-btn" onclick="setVal('sD0Off','vD0Off',6)">Próx</button>
+            <button type="button" class="adj-btn active" onclick="setVal('sD0Off','vD0Off',14)">Med</button>
+            <button type="button" class="adj-btn" onclick="setVal('sD0Off','vD0Off',24)">Long</button>
+          </div>
         </div>
+
+      </div>
     </div>
 
-    <div class="action-buttons">
-        <button id="downloadSvgBtn" class="btn-outline">⬇️ Baixar como SVG</button>
-        <button id="copyNumberBtn" class="btn-outline">📋 Copiar número EAN-13</button>
+    <div class="preview-section">
+      <div class="preview-label">
+        <span><span class="dot off" id="prevDot"></span>Visualização</span>
+        <span id="prevDim" style="font-family:var(--font-mono); font-weight:500; text-transform:none; letter-spacing:0.2px; color:var(--text-3);">—</span>
+      </div>
+      <div class="preview empty" id="preview">
+        <span>Digite um código para visualizar</span>
+      </div>
     </div>
 
-    <div class="barcode-preview">
-        <div class="barcode-wrapper" id="barcodeContainer">
-            <svg id="barcodeSvg" width="0" height="0" viewBox="0 0 0 0" xmlns="http://www.w3.org/2000/svg"></svg>
-        </div>
-        <div id="statusMsg" class="info-message" style="text-align: center;">🔽 Insira um número válido e clique em "Gerar"</div>
+    <div class="btn-row">
+      <button class="btn" id="btnCopy" disabled onclick="copySVG()">
+        <i class="ti ti-copy" aria-hidden="true"></i> Copiar SVG
+      </button>
+      <button class="btn btn-primary" id="btnDl" disabled onclick="downloadSVG()">
+        <i class="ti ti-download" aria-hidden="true"></i> Baixar SVG
+      </button>
     </div>
-    <footer>EAN-13 · primeiro dígito ajustável · altura das barras (expansão para baixo) · tamanho da fonte Arial</footer>
+
+    <div class="info-row">
+      <span class="badge" id="b-code"><span class="b-dot"></span>—</span>
+      <span class="badge" id="b-check"><span class="b-dot"></span>—</span>
+      <span class="badge" id="b-status"><span class="b-dot"></span>—</span>
+    </div>
+
+  </div>
 </div>
 
 <script>
-    (function(){
-        // ==================== TABELAS EAN-13 ====================
-        const ENCODINGS = {
-            A: {
-                '0': '0001101', '1': '0011001', '2': '0010011', '3': '0111101', '4': '0100011',
-                '5': '0110001', '6': '0101111', '7': '0111011', '8': '0110111', '9': '0001011'
-            },
-            B: {
-                '0': '0100111', '1': '0110011', '2': '0011011', '3': '0100001', '4': '0011101',
-                '5': '0111001', '6': '0000101', '7': '0010001', '8': '0001001', '9': '0010111'
-            },
-            C: {
-                '0': '1110010', '1': '1100110', '2': '1101100', '3': '1000010', '4': '1011100',
-                '5': '1001110', '6': '1010000', '7': '1000100', '8': '1001000', '9': '1110100'
-            }
-        };
-        
-        const PARITY_TABLE = {
-            '0': ['A','A','A','A','A','A'],
-            '1': ['A','A','B','A','B','B'],
-            '2': ['A','A','B','B','A','B'],
-            '3': ['A','A','B','B','B','A'],
-            '4': ['A','B','A','A','B','B'],
-            '5': ['A','B','B','A','A','B'],
-            '6': ['A','B','B','B','A','A'],
-            '7': ['A','B','A','B','A','B'],
-            '8': ['A','B','A','B','B','A'],
-            '9': ['A','B','B','A','B','A']
-        };
-        
-        function calculateCheckDigit(ean12) {
-            if (ean12.length !== 12) return null;
-            let sum = 0;
-            for (let i = 0; i < 12; i++) {
-                let digit = parseInt(ean12[i], 10);
-                let peso = (i % 2 === 0) ? 1 : 3;
-                sum += digit * peso;
-            }
-            let rest = sum % 10;
-            return (10 - rest) % 10;
-        }
-        
-        function normalizeEAN(inputRaw) {
-            let cleaned = inputRaw.replace(/\D/g, '');
-            if (cleaned.length === 0) return { valid: false, fullEAN: null, error: "Número vazio" };
-            if (cleaned.length < 12) return { valid: false, fullEAN: null, error: "Mínimo 12 dígitos necessários" };
-            if (cleaned.length > 13) return { valid: false, fullEAN: null, error: "Máximo 13 dígitos" };
-            
-            if (cleaned.length === 12) {
-                let check = calculateCheckDigit(cleaned);
-                if (check === null) return { valid: false, fullEAN: null, error: "Erro ao calcular dígito" };
-                return { valid: true, fullEAN: cleaned + check.toString(), autoCorrected: false };
-            }
-            else if (cleaned.length === 13) {
-                let first12 = cleaned.substring(0,12);
-                let receivedCheck = parseInt(cleaned[12],10);
-                let correctCheck = calculateCheckDigit(first12);
-                if (correctCheck !== receivedCheck) {
-                    let corrected = first12 + correctCheck.toString();
-                    return { valid: true, fullEAN: corrected, autoCorrected: true, errorMsgWarning: `Dígito corrigido (${receivedCheck} → ${correctCheck})` };
-                }
-                return { valid: true, fullEAN: cleaned, autoCorrected: false };
-            }
-            return { valid: false, fullEAN: null, error: "Formato inválido" };
-        }
-        
-        function generateEAN13Pattern(ean13) {
-            if (!ean13 || ean13.length !== 13) return null;
-            const digits = ean13.split('').map(ch => parseInt(ch,10));
-            const firstDigit = digits[0].toString();
-            const parityPattern = PARITY_TABLE[firstDigit];
-            if (!parityPattern) return null;
-            
-            const leftDigits = digits.slice(1, 7);
-            const rightDigits = digits.slice(7, 13);
-            
-            let leftPattern = '';
-            for (let i = 0; i < leftDigits.length; i++) {
-                const patternType = parityPattern[i];
-                const digitStr = leftDigits[i].toString();
-                let encoding = (patternType === 'A') ? ENCODINGS.A[digitStr] : ENCODINGS.B[digitStr];
-                if (!encoding) return null;
-                leftPattern += encoding;
-            }
-            
-            let rightPattern = '';
-            for (let i = 0; i < rightDigits.length; i++) {
-                let encoding = ENCODINGS.C[rightDigits[i].toString()];
-                if (!encoding) return null;
-                rightPattern += encoding;
-            }
-            
-            return '101' + leftPattern + '01010' + rightPattern + '101';
-        }
-        
-        // Renderização completa com todos os ajustes
-        function renderSVGFromPattern(ean13, patternBits, barHeightPx, fontSizePx, firstDigitOffsetPx) {
-            if (!patternBits) return null;
-            
-            const moduleWidth = 3; // 3px por módulo (barras nítidas)
-            const totalModules = patternBits.length; // 95
-            const barsWidth = totalModules * moduleWidth;
-            
-            // Margem direita fixa e margem esquerda DINÂMICA baseada no offset do primeiro dígito
-            // Queremos que o primeiro dígito fique mais próximo da primeira barra: ajustamos leftMargin
-            // A primeira barra começa no ponto (leftMarginBase). Para aproximar, reduzimos o espaço.
-            // Porém, o primeiro dígito precisa estar à esquerda da barra inicial.
-            // Usamos: leftMarginTotal = espacoBaseProPrimeiroDigito + (firstDigitOffsetPx controla proximidade)
-            // O valor firstDigitOffsetPx define a distância do centro do primeiro dígito até o início das barras.
-            // Quanto menor, mais próximo.
-            const startBarX = 28; // posição base onde começa a primeira barra (start guard)
-            // O primeiro dígito será posicionado em: startBarX - firstDigitOffsetPx
-            // Precisamos garantir que o SVG tenha espaço à esquerda suficiente.
-            const minLeftSpace = Math.max(12, firstDigitOffsetPx + 6);
-            const leftMargin = Math.max(18, startBarX - firstDigitOffsetPx + 4);
-            // Garantir que o primeiro dígito não ultrapasse a borda
-            const finalLeftMargin = Math.min(leftMargin, 50); // limitar máximo para não ficar longe demais
-            
-            const rightMargin = 20;
-            const svgWidth = finalLeftMargin + barsWidth + rightMargin;
-            
-            // Altura: barras + espaço para números (com folga)
-            const textAreaHeight = fontSizePx + 18;
-            const svgHeight = barHeightPx + textAreaHeight;
-            
-            const svgNS = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(svgNS, "svg");
-            svg.setAttribute("xmlns", svgNS);
-            svg.setAttribute("width", svgWidth);
-            svg.setAttribute("height", svgHeight);
-            svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-            svg.style.backgroundColor = "#FFFFFF";
-            
-            // Desenhar barras com deslocamento finalLeftMargin
-            let x = finalLeftMargin;
-            for (let i = 0; i < patternBits.length; i++) {
-                if (patternBits[i] === '1') {
-                    const rect = document.createElementNS(svgNS, "rect");
-                    const isStartGuard = (i < 3);
-                    const isEndGuard = (i >= patternBits.length - 3);
-                    const isCenterGuard = (i >= 45 && i < 50);
-                    let heightRect = barHeightPx;
-                    if (isStartGuard || isEndGuard || isCenterGuard) {
-                        heightRect = barHeightPx + 6; // guardas ligeiramente mais longas
-                    }
-                    rect.setAttribute("x", x);
-                    rect.setAttribute("y", 0);
-                    rect.setAttribute("width", moduleWidth);
-                    rect.setAttribute("height", heightRect);
-                    rect.setAttribute("fill", "#1e2f3e");
-                    svg.appendChild(rect);
-                }
-                x += moduleWidth;
-            }
-            
-            // Grupo de textos com fonte Arial pura
-            const textGroup = document.createElementNS(svgNS, "g");
-            textGroup.setAttribute("font-family", "Arial, 'Arial Black', 'Helvetica Neue', sans-serif");
-            textGroup.setAttribute("font-size", `${fontSizePx}px`);
-            textGroup.setAttribute("font-weight", "700");
-            textGroup.setAttribute("fill", "#1e3b4a");
-            textGroup.setAttribute("text-anchor", "middle");
-            
-            const digitValues = ean13.split('');
-            const textY = barHeightPx + fontSizePx - 2;
-            
-            // Primeiro dígito: posicionado à esquerda da primeira barra com base em firstDigitOffsetPx
-            // A primeira barra (start guard) está em finalLeftMargin
-            const firstBarX = finalLeftMargin;
-            // Posicionamos o centro do primeiro dígito em: firstBarX - firstDigitOffsetPx
-            let firstDigitCenter = firstBarX - firstDigitOffsetPx;
-            // Garantir que não fique colado demais (mínimo 3px da borda esquerda)
-            firstDigitCenter = Math.max(8, firstDigitCenter);
-            const digit0 = document.createElementNS(svgNS, "text");
-            digit0.setAttribute("x", firstDigitCenter);
-            digit0.setAttribute("y", textY);
-            digit0.setAttribute("text-anchor", "middle");
-            digit0.setAttribute("font-size", `${fontSizePx}px`);
-            digit0.setAttribute("font-weight", "bold");
-            digit0.textContent = digitValues[0];
-            textGroup.appendChild(digit0);
-            
-            // Demais 12 dígitos posicionados normalmente nos centros de seus blocos de 7 módulos
-            const startGuardModules = 3;
-            const leftTotalModules = 42;
-            const centerModules = 5;
-            
-            // Left digits (índices 1 a 6)
-            for (let i = 0; i < 6; i++) {
-                let startMod = startGuardModules + (i * 7);
-                let centerModPos = startMod + 3.5;
-                let xPos = finalLeftMargin + (centerModPos * moduleWidth);
-                const digitText = document.createElementNS(svgNS, "text");
-                digitText.setAttribute("x", xPos);
-                digitText.setAttribute("y", textY);
-                digitText.setAttribute("text-anchor", "middle");
-                digitText.setAttribute("font-size", `${fontSizePx}px`);
-                digitText.setAttribute("font-weight", "bold");
-                digitText.textContent = digitValues[i + 1];
-                textGroup.appendChild(digitText);
-            }
-            
-            // Right digits (índices 7 a 12)
-            for (let i = 0; i < 6; i++) {
-                let startMod = startGuardModules + leftTotalModules + centerModules + (i * 7);
-                let centerModPos = startMod + 3.5;
-                let xPos = finalLeftMargin + (centerModPos * moduleWidth);
-                const digitText = document.createElementNS(svgNS, "text");
-                digitText.setAttribute("x", xPos);
-                digitText.setAttribute("y", textY);
-                digitText.setAttribute("text-anchor", "middle");
-                digitText.setAttribute("font-size", `${fontSizePx}px`);
-                digitText.setAttribute("font-weight", "bold");
-                digitText.textContent = digitValues[i + 7];
-                textGroup.appendChild(digitText);
-            }
-            
-            svg.appendChild(textGroup);
-            return svg;
-        }
-        
-        // ========== DOM Elements ==========
-        const eanInput = document.getElementById('eanInput');
-        const generateBtn = document.getElementById('generateBtn');
-        const downloadSvgBtn = document.getElementById('downloadSvgBtn');
-        const copyNumberBtn = document.getElementById('copyNumberBtn');
-        const barcodeContainer = document.getElementById('barcodeContainer');
-        const statusMsgDiv = document.getElementById('statusMsg');
-        
-        // Controles
-        const heightSlider = document.getElementById('heightSlider');
-        const heightValueSpan = document.getElementById('heightValue');
-        const fontSizeSlider = document.getElementById('fontSizeSlider');
-        const fontSizeValueSpan = document.getElementById('fontSizeValue');
-        const firstDigitOffsetSlider = document.getElementById('firstDigitOffset');
-        const offsetValueSpan = document.getElementById('offsetValue');
-        
-        // Estado atual
-        let currentPatternBits = null;
-        let currentEAN = null;
-        let currentBarHeight = 110;
-        let currentFontSize = 15;
-        let currentFirstDigitOffset = 14;
-        
-        function refreshSVG() {
-            if (!currentPatternBits || !currentEAN) return;
-            const newSvg = renderSVGFromPattern(
-                currentEAN, 
-                currentPatternBits, 
-                currentBarHeight, 
-                currentFontSize, 
-                currentFirstDigitOffset
-            );
-            if (newSvg) {
-                while (barcodeContainer.firstChild) barcodeContainer.removeChild(barcodeContainer.firstChild);
-                barcodeContainer.appendChild(newSvg);
-                statusMsgDiv.innerHTML = `✅ Atualizado · EAN: ${currentEAN} · altura ${currentBarHeight}px · fonte ${currentFontSize}px · proximidade ${currentFirstDigitOffset}px`;
-            }
-        }
-        
-        function updateBarcode() {
-            const rawValue = eanInput.value.trim();
-            const normalized = normalizeEAN(rawValue);
-            if (!normalized.valid || !normalized.fullEAN) {
-                statusMsgDiv.innerHTML = `⚠️ ${normalized.error || "Código inválido. Use 12 ou 13 dígitos."}`;
-                barcodeContainer.innerHTML = `<svg width="300" height="80" viewBox="0 0 300 80"><rect width="300" height="80" fill="#f6fafd" rx="12"/><text x="150" y="45" text-anchor="middle" font-family="Arial" font-size="13" fill="#9aaeb9">⛔ EAN inválido</text></svg>`;
-                currentPatternBits = null;
-                currentEAN = null;
-                return;
-            }
-            
-            let eanFull = normalized.fullEAN;
-            let warningMsg = normalized.autoCorrected ? ` · ${normalized.errorMsgWarning}` : "";
-            const pattern = generateEAN13Pattern(eanFull);
-            if (!pattern) {
-                statusMsgDiv.innerHTML = "❌ Erro ao gerar padrão de barras.";
-                return;
-            }
-            
-            currentPatternBits = pattern;
-            currentEAN = eanFull;
-            refreshSVG();
-            if (warningMsg) statusMsgDiv.innerHTML += warningMsg;
-        }
-        
-        function downloadSVG() {
-            if (!currentPatternBits || !currentEAN) {
-                statusMsgDiv.innerHTML = "⚠️ Nenhum código gerado. Gere um primeiro.";
-                return;
-            }
-            const tempSvg = renderSVGFromPattern(
-                currentEAN, 
-                currentPatternBits, 
-                currentBarHeight, 
-                currentFontSize, 
-                currentFirstDigitOffset
-            );
-            if (!tempSvg) return;
-            const serializer = new XMLSerializer();
-            let svgString = serializer.serializeToString(tempSvg);
-            svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
-            const blob = new Blob([svgString], { type: "image/svg+xml" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `EAN13_${currentEAN}.svg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            statusMsgDiv.innerHTML = `📁 Download SVG: EAN13_${currentEAN}.svg`;
-        }
-        
-        function copyEANumber() {
-            if (!currentEAN) {
-                statusMsgDiv.innerHTML = "⚠️ Nenhum EAN-13 ativo.";
-                return;
-            }
-            navigator.clipboard.writeText(currentEAN).then(() => {
-                statusMsgDiv.innerHTML = `📋 Número ${currentEAN} copiado!`;
-            }).catch(() => {
-                statusMsgDiv.innerHTML = "❌ Falha ao copiar.";
-            });
-        }
-        
-        // Eventos dos controles com atualização em tempo real
-        heightSlider.addEventListener('input', (e) => {
-            currentBarHeight = parseInt(e.target.value, 10);
-            heightValueSpan.textContent = currentBarHeight + 'px';
-            if (currentPatternBits && currentEAN) refreshSVG();
-        });
-        
-        fontSizeSlider.addEventListener('input', (e) => {
-            currentFontSize = parseInt(e.target.value, 10);
-            fontSizeValueSpan.textContent = currentFontSize + 'px';
-            if (currentPatternBits && currentEAN) refreshSVG();
-        });
-        
-        firstDigitOffsetSlider.addEventListener('input', (e) => {
-            currentFirstDigitOffset = parseInt(e.target.value, 10);
-            offsetValueSpan.textContent = currentFirstDigitOffset + 'px';
-            if (currentPatternBits && currentEAN) refreshSVG();
-        });
-        
-        generateBtn.addEventListener('click', updateBarcode);
-        downloadSvgBtn.addEventListener('click', downloadSVG);
-        copyNumberBtn.addEventListener('click', copyEANumber);
-        eanInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateBarcode(); });
-        
-        // Inicialização com código exemplo
-        eanInput.value = "789123456789";
-        updateBarcode();
-    })();
+/* ==================== EAN-13 ==================== */
+const L=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+const G=["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"];
+const R=["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+const PAR=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+
+function calcCheck(a){const s=a.reduce((t,v,i)=>t+v*(i%2===0?1:3),0);return(10-s%10)%10}
+
+function encode(c13){
+  const d=c13.split('').map(Number),p=PAR[d[0]];
+  let b="101";
+  for(let i=0;i<6;i++) b+=p[i]==='L'?L[d[i+1]]:G[d[i+1]];
+  b+="01010";
+  for(let i=0;i<6;i++) b+=R[d[i+7]];
+  return b+"101";
+}
+
+function getAdj(){
+  return{
+    barH:  parseFloat(document.getElementById('sBarH').value),
+    fs:    parseFloat(document.getElementById('sFontSz').value),
+    d0off: parseFloat(document.getElementById('sD0Off').value)
+  };
+}
+
+function syncVal(sid,vid){document.getElementById(vid).textContent=document.getElementById(sid).value}
+function setVal(sid,vid,val){
+  document.getElementById(sid).value=val;
+  syncVal(sid,vid);
+  // atualiza botões ativos do grupo
+  const group = document.getElementById(sid).closest('.adj-item');
+  group.querySelectorAll('.adj-btn').forEach(b=>b.classList.remove('active'));
+  event?.target?.classList?.add('active');
+  update();
+}
+
+/* ==================== SVG (geometria inalterada) ==================== */
+function buildSVG(c13,cfg){
+  const bits=encode(c13);
+  const mw=2.8;
+  const barH=cfg.barH;
+  const fs=cfg.fs;
+  const d0off=cfg.d0off;
+  const qz=Math.round(11*mw);
+
+  const gap   = 3;
+  const capH  = fs * 0.72;
+  const textY = barH + gap + capH;
+
+  const guardBottom = (textY - capH / 2) + 1;
+  const W = Math.round(95*mw + qz*2);
+  const H = Math.round(textY + fs*0.3 + 4);
+
+  let bars='';
+  for(let i=0;i<bits.length;i++){
+    if(bits[i]==='1'){
+      const x=(qz+i*mw).toFixed(2);
+      const isG=(i<3)||(i>=45&&i<=49)||(i>=92);
+      bars+=`<rect x="${x}" y="0" width="${mw.toFixed(2)}" height="${(isG ? guardBottom : barH).toFixed(2)}" fill="#000"/>`;
+    }
+  }
+
+  const lStart=qz+3*mw;
+  const rStart=qz+(3+42+5)*mw;
+  const FA=`font-family="Arial,Helvetica,sans-serif" font-size="${fs}" text-anchor="middle" fill="#000"`;
+
+  let nums='';
+  nums+=`<text x="${(qz-d0off).toFixed(1)}" y="${textY.toFixed(1)}" ${FA}>${c13[0]}</text>`;
+  for(let i=0;i<6;i++){
+    const cx=(lStart+(i*7+3.5)*mw).toFixed(1);
+    nums+=`<text x="${cx}" y="${textY.toFixed(1)}" ${FA}>${c13[i+1]}</text>`;
+  }
+  for(let i=0;i<6;i++){
+    const cx=(rStart+(i*7+3.5)*mw).toFixed(1);
+    nums+=`<text x="${cx}" y="${textY.toFixed(1)}" ${FA}>${c13[i+7]}</text>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<rect width="${W}" height="${H}" fill="white"/>
+${bars}
+${nums}
+</svg>`;
+}
+
+/* ==================== UI ==================== */
+let currentSVG=null,currentCode=null;
+
+function update(){
+  const inp=document.getElementById('inp');
+  const raw=inp.value.replace(/\D/g,'');
+  const hint=document.getElementById('hint');
+  const preview=document.getElementById('preview');
+  const prevDot=document.getElementById('prevDot');
+  const prevDim=document.getElementById('prevDim');
+  const counter=document.getElementById('counter');
+  const btnDl=document.getElementById('btnDl');
+  const btnCopy=document.getElementById('btnCopy');
+  const bCode=document.getElementById('b-code');
+  const bCheck=document.getElementById('b-check');
+  const bStatus=document.getElementById('b-status');
+
+  inp.value=raw;
+  counter.textContent = raw.length + '/13';
+  currentSVG=null; currentCode=null;
+  btnDl.disabled=true; btnCopy.disabled=true;
+  inp.className='code-input';
+  hint.className='hint';
+
+  if(raw.length===0){
+    preview.innerHTML='<span>Digite um código para visualizar</span>';
+    preview.className='preview empty';
+    prevDot.classList.add('off');
+    prevDim.textContent='—';
+    bCode.innerHTML='<span class="b-dot"></span>—';
+    bCheck.innerHTML='<span class="b-dot"></span>—';
+    bStatus.innerHTML='<span class="b-dot"></span>—';
+    bCode.className='badge'; bCheck.className='badge'; bStatus.className='badge';
+    return;
+  }
+
+  if(raw.length<12){
+    hint.classList.add('visible','info');
+    hint.innerHTML=`<i class="ti ti-info-circle"></i> ${12-raw.length} dígito(s) restante(s)`;
+    preview.innerHTML='<span>Aguardando código completo</span>';
+    preview.className='preview empty';
+    prevDot.classList.add('off');
+    prevDim.textContent='—';
+    bCode.innerHTML=`<span class="b-dot"></span>${raw.length} dígito(s)`;
+    bCode.className='badge';
+    bCheck.innerHTML='<span class="b-dot"></span>—';
+    bCheck.className='badge';
+    bStatus.innerHTML='<span class="b-dot"></span>Incompleto';
+    bStatus.className='badge';
+    return;
+  }
+
+  const d12=raw.slice(0,12).split('').map(Number);
+  const chk=calcCheck(d12);
+  let code13;
+
+  if(raw.length===12){
+    code13=raw+chk;
+    inp.className='code-input ok';
+    hint.classList.add('visible','success');
+    hint.innerHTML=`<i class="ti ti-check"></i> Dígito verificador: <strong>${chk}</strong> → <strong>${code13}</strong>`;
+  } else if(raw.length===13){
+    const entered=parseInt(raw[12]);
+    if(entered!==chk){
+      inp.className='code-input err';
+      hint.classList.add('visible','error');
+      hint.innerHTML=`<i class="ti ti-alert-circle"></i> Dígito incorreto (informado: ${entered}, esperado: ${chk})`;
+      preview.innerHTML='<span>Código inválido</span>';
+      preview.className='preview empty';
+      prevDot.classList.add('off');
+      prevDim.textContent='—';
+      bCode.innerHTML=`<span class="b-dot"></span>${raw}`;
+      bCode.className='badge err';
+      bCheck.innerHTML='<span class="b-dot"></span>Inválido';
+      bCheck.className='badge err';
+      bStatus.innerHTML='<span class="b-dot"></span>Erro';
+      bStatus.className='badge err';
+      return;
+    }
+    code13=raw;
+    inp.className='code-input ok';
+    hint.classList.add('visible','success');
+    hint.innerHTML=`<i class="ti ti-check"></i> Código válido`;
+  } else {
+    inp.className='code-input err';
+    hint.classList.add('visible','error');
+    hint.innerHTML=`<i class="ti ti-x"></i> Máximo 13 dígitos`;
+    preview.innerHTML='<span>Código inválido</span>';
+    preview.className='preview empty';
+    return;
+  }
+
+  const svg=buildSVG(code13,getAdj());
+  currentSVG=svg; currentCode=code13;
+  preview.innerHTML=svg;
+  preview.className='preview';
+  prevDot.classList.remove('off');
+  // extrai as dimensões do SVG
+  const m = svg.match(/width="(\d+)" height="(\d+)"/);
+  if(m) prevDim.textContent = m[1]+' × '+m[2]+' px';
+
+  btnDl.disabled=false; btnCopy.disabled=false;
+  bCode.innerHTML=`<span class="b-dot"></span><strong>${code13}</strong>`;
+  bCode.className='badge ok';
+  bCheck.innerHTML=`<span class="b-dot"></span>Verificador: <strong>${code13[12]}</strong>`;
+  bCheck.className='badge ok';
+  bStatus.innerHTML='<span class="b-dot"></span>Pronto';
+  bStatus.className='badge ok';
+}
+
+function downloadSVG(){
+  if(!currentSVG) return;
+  const blob=new Blob([currentSVG],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`EAN13_${currentCode}.svg`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copySVG(){
+  if(!currentSVG) return;
+  navigator.clipboard.writeText(currentSVG).then(()=>{
+    const btn=document.getElementById('btnCopy');
+    const orig=btn.innerHTML;
+    btn.innerHTML='<i class="ti ti-check"></i> Copiado!';
+    setTimeout(()=>btn.innerHTML=orig,1800);
+  });
+}
+
+update();
 </script>
 </body>
 </html>
